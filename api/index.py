@@ -1,48 +1,17 @@
-from flask import Flask
+from flask import Flask, render_template
+import os
 
-app = Flask(__name__)
+# 获取当前这个 index.py 文件所在的绝对路径
+base_dir = os.path.dirname(os.path.abspath(__file__))
+# 拼接出 templates 的路径
+template_dir = os.path.join(base_dir, 'templates')
+
+# 明确告诉 Flask：模板就在我隔壁的 templates 文件夹里
+app = Flask(__name__, template_folder=template_dir)
 
 @app.route('/')
 def home():
-    return """
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>我的 Vercel 网站</title>
-        <style>
-            body {
-                font-family: system-ui, -apple-system, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                height: 100vh;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: white;
-            }
-            .card {
-                background: rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
-                padding: 40px;
-                border-radius: 20px;
-                text-align: center;
-                box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-            h1 { margin: 0 0 10px 0; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h1>🎉 救活了！</h1>
-            <p>不需要读取外部文件，这样最稳。</p>
-            <p>Status: <b>Online</b></p>
-        </div>
-    </body>
-    </html>
-    """
+    return render_template('index.html')
 
-# 这一行必须保留
+# 必须有这一行
 app = app
