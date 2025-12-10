@@ -1,51 +1,33 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 Vercel 网站</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            margin: 0;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            padding: 2rem 3rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        h1 { margin-bottom: 0.5rem; font-size: 2.5rem; }
-        p { font-size: 1.2rem; opacity: 0.9; }
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: white;
-            color: #764ba2;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-        .btn:hover { transform: scale(1.05); }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>🎉 上线成功！</h1>
-        <p>这是你的第一个 Python 全栈网站。</p>
-        <p>部署平台: Vercel | 后端: Flask</p>
-        <a href="https://github.com" target="_blank" class="btn">去 GitHub 看看</a>
-    </div>
-</body>
-</html>
+from flask import Flask, render_template
+import os
+
+# --- 1. 路径设置 (确保Vercel能找到文件) ---
+base_dir = os.path.dirname(os.path.abspath(__file__))
+template_dir = os.path.join(base_dir, 'templates')
+app = Flask(__name__, template_folder=template_dir)
+
+# --- 2. 核心逻辑 ---
+@app.route('/')
+def dashboard_home():
+    # === 准备假数据区域 (以后这里换成读数据库的代码) ===
+    # 我们创建一个字典(dictionary)，把想显示的数据都放进去
+    fake_data = {
+        # 顶部卡片的数字
+        "total_users": 1205,
+        "monthly_income": "¥ 84,000",
+        "pending_tasks": 3,
+        # 表格里的数据列表
+        "recent_orders": [
+            {"id": "#1001", "user": "张三", "date": "2023-10-20", "amount": "¥120", "status": "已完成"},
+            {"id": "#1002", "user": "李四", "date": "2023-10-21", "amount": "¥350", "status": "处理中"},
+            {"id": "#1003", "user": "王五", "date": "2023-10-21", "amount": "¥80",  "status": "已完成"},
+            {"id": "#1004", "user": "赵六", "date": "2023-10-22", "amount": "¥900", "status": "已取消"},
+            {"id": "#1005", "user": "钱七", "date": "2023-10-22", "amount": "¥150", "status": "已完成"},
+        ]
+    }
+    
+    # 把准备好的 fake_data 传给网页 template
+    return render_template('index.html', data=fake_data)
+
+# Vercel 必须项
+app = app
