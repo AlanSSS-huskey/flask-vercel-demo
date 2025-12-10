@@ -6,45 +6,36 @@ import os
 
 app = FastAPI()
 
-# --- 核心修复：安全地加载模板 ---
-try:
-    # 刚才的测试证明 Vercel 的根目录是 /var/task
-    # 所以模板就在当前工作目录下的 templates 文件夹
-    base_dir = os.getcwd()
-    template_path = os.path.join(base_dir, "templates")
+# --- 路径查找逻辑 (适配 Vercel) ---
+def get_template_dir():
+    # 1. 获取当前文件 (api/index.py) 的绝对路径
+    current_file_path = os.path.abspath(__file__)
     
-    # 打印路径到日志里 (Vercel 后台能看到)
-    print(f"Loading templates from: {template_path}")
+    # 2. 获取当前文件所在目录 (api/)
+    current_dir = os.path.dirname(current_file_path)
     
-    # 初始化模板
-    templates = Jinja2Templates(directory=template_path)
+    # 3. 获取项目根目录 (api/ 的上一级)
+    project_root = os.path.dirname(current_dir)
     
-except Exception as e:
-    # 如果出错，把错误存下来，稍后显示在网页上，而不是直接崩掉
-    templates = None
-    template_error = str(e)
+    # 4. 拼接 templates 路径
+    template_path = os.path.join(project_root, "templates")
+    
+    return template_path
+
+# 初始化模板
+template_dir = get_template_dir()
+templates = Jinja2Templates(directory=template_dir)
 
 # --- 模拟数据库 ---
 tasks_db = [
-    {"id": "1", "title": "部署成功！", "status": "done", "tag": "Milestone", "date": "Today"},
-    {"id": "2", "title": "开始使用 Dashboard", "status": "todo", "tag": "Life", "date": "Now"},
+    {"id": "1", "title": "Config vercel.json", "status": "done", "tag": "Fix", "date": "Today"},
+    {"id": "2", "title": "Read HTML files correctly", "status": "todo", "tag": "Dev", "date": "Now"},
 ]
 
-# --- 路由 ---
+# --- 路由逻辑 ---
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    # 保险措施：如果模板没加载成功，直接显示错误信息
-    if templates is None:
-        return f"""
-        <html><body>
-            <h1>Startup Error</h1>
-            <p>Could not load templates folder.</p>
-            <p>Error details: {template_error}</p>
-            <p>Current Directory: {os.getcwd()}</p>
-        </body></html>
-        """
-        
     return templates.TemplateResponse("index.html", {
         "request": request, 
         "tasks": tasks_db,
