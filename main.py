@@ -11,7 +11,26 @@ from datetime import datetime
 app = FastAPI()
 
 # 配置模板文件夹
-templates = Jinja2Templates(directory="templates")
+# main.py 修改前:
+# templates = Jinja2Templates(directory="templates")
+
+# main.py 修改后 (请替换):
+import os
+from fastapi import FastAPI, Request, Form
+from fastapi.templating import Jinja2Templates
+# ... 其他 import ...
+
+app = FastAPI()
+
+# 获取 main.py 所在的绝对路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 拼接出 templates 的绝对路径
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+
+# 使用绝对路径
+templates = Jinja2Templates(directory=TEMPLATE_DIR)
+
+# ... 下面是原本的路由代码 ...
 
 # --- 模拟数据库 (内存版) ---
 # 注意：在 Vercel Serverless 上，全局变量会在一段时间后重置。
