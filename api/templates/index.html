@@ -1,77 +1,84 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的 To-Do List</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+    <title>Alan's Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#09090b', // 极深灰背景
+                        surface: '#18181b',    // 卡片背景
+                        border: '#27272a',     // 边框
+                        primary: '#fafafa',    // 主文字
+                        muted: '#a1a1aa'       // 弱文字
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { background: #f0f2f5; min-height: 100vh; display: flex; justify-content: center; padding-top: 50px; }
-        .todo-card { width: 100%; max-width: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; }
-        .card-header { background: #6c5ce7; padding: 30px; color: white; text-align: center; }
-        .card-body { padding: 0; }
-        .input-group { padding: 20px; border-bottom: 1px solid #eee; }
-        .input-group input { border-radius: 20px 0 0 20px !important; padding: 12px 20px; border: 1px solid #ddd; }
-        .input-group button { border-radius: 0 20px 20px 0 !important; padding: 0 25px; }
-        
-        .list-group-item { border: none; border-bottom: 1px solid #f8f9fa; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
-        .list-group-item:hover { background-color: #fcfcfc; }
-        .list-group-item:last-child { border-bottom: none; }
-        
-        /* 完成状态的样式 */
-        .done-text { text-decoration: line-through; color: #adb5bd; }
-        .btn-action { border: none; background: transparent; padding: 5px; color: #adb5bd; transition: 0.2s; }
-        .btn-action:hover { color: #ff6b6b; transform: scale(1.1); }
+        /* 隐藏滚动条但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="bg-background text-primary h-screen flex overflow-hidden font-sans antialiased selection:bg-white selection:text-black">
 
-<div class="todo-card">
-    <div class="card-header">
-        <h2 class="m-0 fw-bold"><i class="bi bi-check2-square me-2"></i>今日待办</h2>
-        <p class="m-0 opacity-75 small">Focus on what matters</p>
-    </div>
+    <aside class="w-64 border-r border-border hidden md:flex flex-col bg-background/50">
+        <div class="p-6 h-14 flex items-center font-bold tracking-wider text-sm">
+            ALAN'S DASHBOARD
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium rounded-md bg-surface text-white">
+                Inbox
+            </a>
+            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted hover:bg-surface/50 hover:text-white transition">
+                Today
+            </a>
+            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium rounded-md text-muted hover:bg-surface/50 hover:text-white transition">
+                Upcoming
+            </a>
+            
+            <div class="mt-8 px-2 text-xs font-semibold text-muted uppercase tracking-wider">Tags</div>
+            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-muted hover:text-white">
+                <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span> Urgent
+            </a>
+            <a href="#" class="flex items-center px-2 py-2 text-sm font-medium text-muted hover:text-white">
+                <span class="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> Work
+            </a>
+        </nav>
+    </aside>
 
-    <div class="card-body">
-        <form action="/add" method="POST" class="input-group">
-            <input type="text" name="content" class="form-control" placeholder="今天想做点什么？" required autocomplete="off">
-            <button class="btn btn-primary" type="submit">添加</button>
-        </form>
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header class="h-14 border-b border-border flex items-center justify-between px-6">
+            <h1 class="text-lg font-semibold">Inbox</h1>
+            <div class="text-xs text-muted">Running on Python & Vercel</div>
+        </header>
 
-        <ul class="list-group list-group-flush">
-            {% for todo in todos %}
-            <li class="list-group-item">
-                <div class="d-flex align-items-center">
-                    <a href="/toggle/{{ todo.id }}" class="text-decoration-none me-3 fs-4">
-                        {% if todo.done %}
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                        {% else %}
-                            <i class="bi bi-circle text-secondary"></i>
-                        {% endif %}
-                    </a>
-                    
-                    <span class="fs-5 {% if todo.done %}done-text{% endif %}">
-                        {{ todo.content }}
-                    </span>
-                </div>
+        <div class="flex-1 overflow-y-auto p-6 no-scrollbar">
+            
+            <form hx-post="/add" hx-target="#task-list" hx-on::after-request="this.reset()" class="mb-8">
+                <input 
+                    type="text" 
+                    name="title" 
+                    placeholder="Add a new task... (Press Enter)" 
+                    class="w-full bg-transparent border-b border-border py-3 text-lg focus:outline-none focus:border-white transition placeholder-muted/50"
+                    autocomplete="off"
+                    required
+                >
+            </form>
 
-                <a href="/delete/{{ todo.id }}" class="btn-action" title="删除">
-                    <i class="bi bi-trash"></i>
-                </a>
-            </li>
-            {% else %}
-            <li class="list-group-item text-center py-5 text-muted">
-                <div>
-                    <i class="bi bi-cup-hot display-4 d-block mb-3 opacity-25"></i>
-                    任务清空啦，喝杯咖啡吧！
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+            <div id="task-list" class="space-y-1">
+                {% include "partials/task_list.html" %}
+            </div>
+        </div>
+    </main>
 
 </body>
 </html>
